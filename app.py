@@ -8,9 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-DATA_PATH = Path(
-    "/Users/luis/projects/lyon_loyers/data/car_care.carencadrmtloyer_latest.json"
-)
+DATA_PATH = Path("data/car_care.carencadrmtloyer_latest.json")
 
 NON_NUMERIC_COLUMNS = ["codeiris", "zonage", "commune", "insee", "gid", "geometry"]
 
