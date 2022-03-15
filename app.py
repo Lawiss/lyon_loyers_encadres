@@ -3,11 +3,8 @@ from pathlib import Path
 import math
 
 import geopandas
-from matplotlib.pyplot import title
-import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
 st.set_page_config(
