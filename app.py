@@ -74,13 +74,25 @@ flat_type_filters = {
     "Meublé": "meuble",
     "Non meublé": "non meuble",
 }
-col1, col2, col3 = st.columns(3)
+
+variable_filters = {
+    "Loyer de référence ": "loyer_reference",
+    "Loyer de référence majoré": "loyer_reference_majore",
+    "Loyer de référence minoré": "loyer_reference_minore",
+}
+
+st.markdown(
+    r"""Vous pouvez sélectionner plus d'une valeur par caractéristique, dans ce cas c'est une valeur moyenne qui est affichée."""
+)
+
+col1, col2, col3, col4 = st.columns(4)
+
 
 with col1:
     num_rooms = st.multiselect(
         "Taille du logement",
         options=num_rooms_filters.keys(),
-        default=num_rooms_filters.keys(),
+        default="2 pièces",
     )
 
 with col2:
@@ -95,9 +107,13 @@ with col3:
         "Type de logement", options=flat_type_filters.keys(), default="Non meublé"
     )
 
+with col4:
+    variable = st.radio("Variable", options=variable_filters.keys(), index=1)
+
 num_rooms_df_filter = [num_rooms_filters[e] for e in num_rooms]
 construction_year_df_filter = [construction_year_filters[e] for e in construction_year]
 flat_type_df_filter = [flat_type_filters[e] for e in flat_type]
+selected_variable = variable_filters[variable]
 
 selected_gdf_mean = (
     gdf.loc[
@@ -106,9 +122,12 @@ selected_gdf_mean = (
         & (gdf.number_of_rooms.isin(num_rooms_df_filter)),
     ]
     .groupby("codeiris")
-    .agg(value=("loyer_reference_majore", "mean"), geometry=("geometry", "first"))
+    .agg(value=(selected_variable, "mean"), geometry=("geometry", "first"))
 )
 selected_gdf_mean = geopandas.GeoDataFrame(selected_gdf_mean)
+
+text = f"""Pour votre sélection, le {variable.lower()} est compris entre **{selected_gdf_mean.value.round(2).min()}** €/m² et **{selected_gdf_mean.value.round(2).max()}** €/m²."""
+st.markdown(text)
 
 fig = px.choropleth_mapbox(
     selected_gdf_mean,
@@ -121,7 +140,7 @@ fig = px.choropleth_mapbox(
     height=600,
     width=900,
     opacity=0.5,
-    labels={"color": "Loyer de référence majoré moyen (€/m²)"},
+    labels={"color": f"{variable} (€/m²)"},
     color_continuous_scale=["#fee6ce", "#fdae6b", "#e6550d"],
     range_color=[
         math.floor(selected_gdf_mean.value.min()),
